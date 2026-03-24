@@ -1,0 +1,27 @@
+name: Deploy Yggdrasil Lite to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "yggdrasil-lite/**"
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy yggdrasil-lite/ to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./yggdrasil-lite
+          publish_branch: gh-pages
+          force_orphan: true
+          cname: adarshsadanand.in

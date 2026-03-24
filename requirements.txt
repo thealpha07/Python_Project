@@ -1,0 +1,16 @@
+flask
+flask-cors
+python-dotenv
+requests
+numpy
+scipy
+reportlab
+python-docx
+chromadb
+sentence-transformers
+ollama
+tavily-python
+langchain
+langchain-community
+docx
+gunicorn==21.2.0
