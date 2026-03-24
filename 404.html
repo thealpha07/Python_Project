@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Yggdrasil</title>
+  <script>
+    // GitHub Pages SPA redirect trick
+    var path = window.location.pathname;
+    var search = window.location.search;
+    window.location.replace(
+      window.location.origin + '/' +
+      path.slice(1).split('/').slice(1).join('/') +
+      (search ? '?' + search.slice(1) : '')
+    );
+  </script>
+</head>
+<body></body>
+</html>
