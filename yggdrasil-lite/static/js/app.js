@@ -34,28 +34,24 @@ class IEEEPDFGenerator {
     const colGap = 0.25;
 
     // ── Title block (full width) ─────────────────────────────────────────
-    doc.setFont("times", "bold");
-    doc.setFontSize(16);
+    doc.setFont("times", "normal");
+    doc.setFontSize(22);
     const titleLines = doc.splitTextToSize(data.topic, pageW - 2 * margin);
-    let y = margin + 0.2;
+    let y = margin + 0.3;
     titleLines.forEach((line) => {
       doc.text(line, pageW / 2, y, { align: "center" });
-      y += 0.22;
+      y += 0.28;
     });
 
     y += 0.1;
+    doc.setFont("times", "normal");
+    doc.setFontSize(11);
+    doc.text("Yggdrasil Deep Research Tool", pageW / 2, y, { align: "center" });
+    y += 0.15;
     doc.setFont("times", "italic");
     doc.setFontSize(10);
-    doc.text("Yggdrasil Deep Research Tool  •  AI-Synthesized Report", pageW / 2, y, { align: "center" });
-    y += 0.1;
-    doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}  •  Depth: ${data.depth || "standard"}`, pageW / 2, y, { align: "center" });
-    y += 0.15;
-
-    // Divider
-    doc.setDrawColor(74, 155, 110);
-    doc.setLineWidth(0.02);
-    doc.line(margin, y, pageW - margin, y);
-    y += 0.15;
+    doc.text(`AI-Synthesized Report • Generated: ${new Date().toLocaleDateString("en-US")} • Depth: ${data.depth || "standard"}`, pageW / 2, y, { align: "center" });
+    y += 0.25;
 
     // ── Two-column body ──────────────────────────────────────────────────
     const col1X = margin;
@@ -96,12 +92,28 @@ class IEEEPDFGenerator {
     };
 
     // Print sections
+    let isFirst = true;
     for (const para of paragraphs) {
+      if (isFirst && !para.startsWith("Abstract")) {
+        addText("Abstract— " + para, false);
+        isFirst = false;
+        continue;
+      }
+      isFirst = false;
+
       const isHeader =
         rawText.includes("## " + para) ||
         rawText.includes("### " + para) ||
         /^\d+\.\s/.test(para);
-      addText(para, isHeader);
+        
+      if (isHeader) {
+        // Add a bit of space before headers
+        colY[col] += 0.05;
+        // IEEE headers are usually small caps, we use bold
+        addText(para.toUpperCase(), true);
+      } else {
+        addText(para, false);
+      }
     }
 
     // ── References ───────────────────────────────────────────────────────
@@ -154,30 +166,6 @@ class IEEEDOCXGenerator {
     const rawParagraphs = synthesis.split(/\n\n+/).filter(Boolean);
 
     const docChildren = [];
-
-    // Title
-    docChildren.push(
-      new Paragraph({
-        text: data.topic,
-        heading: HeadingLevel.TITLE,
-        alignment: AlignmentType.CENTER,
-      })
-    );
-
-    // Subtitle
-    docChildren.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Yggdrasil Deep Research Tool  •  ${new Date().toLocaleDateString("en-IN")}  •  Depth: ${data.depth || "standard"}`,
-            italics: true,
-            size: 20,
-          }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      })
-    );
 
     // Body paragraphs
     for (const para of rawParagraphs) {
@@ -232,6 +220,7 @@ class IEEEDOCXGenerator {
       sections: [
         {
           properties: {
+            type: docx.SectionType.CONTINUOUS,
             page: {
               margin: {
                 top: convertInchesToTwip(1),
@@ -239,6 +228,33 @@ class IEEEDOCXGenerator {
                 left: convertInchesToTwip(1),
                 right: convertInchesToTwip(1),
               },
+            },
+          },
+          children: [
+            new Paragraph({
+              text: data.topic,
+              heading: HeadingLevel.TITLE,
+              alignment: AlignmentType.CENTER,
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Yggdrasil Deep Research Tool\nAI-Synthesized Report • ${new Date().toLocaleDateString("en-US")} • Depth: ${data.depth || "standard"}`,
+                  italics: true,
+                  size: 20,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 300 },
+            })
+          ],
+        },
+        {
+          properties: {
+            type: docx.SectionType.CONTINUOUS,
+            column: {
+              space: convertInchesToTwip(0.25),
+              count: 2,
             },
           },
           children: docChildren,
